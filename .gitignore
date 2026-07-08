@@ -1,0 +1,26 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Dev run/test servers
+run/
+runs/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+.eclipse/
+
+# OS
+.DS_Store
+
+# Agent context (local only, never published)
+AGENTS.md
+AGENT.md
+CLAUDE.md

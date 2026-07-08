@@ -1,0 +1,81 @@
+# Fiw Graves
+
+*A place for your things when you're gone.*
+
+When you die, your items and XP settle into a grave: a floating head, a few lines of
+floating text, and one of seven dry epitaphs. Walk back, crack it open, move on with
+your life.
+
+Built for **Minecraft 1.21.11** on **Fabric** and **NeoForge** from a single codebase.
+
+## Why it's different
+
+**The graves aren't really there.** The head and text you see are pure network
+packets — no armor stand, no display entity, nothing is ever written into the world
+or its chunks. If the server crashes, gets rolled back, or the mod is removed,
+there is *nothing* to leak: no floating heads, no orphaned holograms, no ghost
+entities to `/kill`. The save file is the single source of truth, and markers are
+re-synthesized from it on every boot.
+
+**Vanilla clients welcome.** Because everything is protocol-level, players connect
+with a completely unmodified client. Install the jar on the server, done.
+
+**Griefed? Rolled back.** Every grave that expires or gets emptied by someone else
+is kept in a short per-player history. An operator can `/graves rollback <player>`
+to respawn their lost loot as a fresh grave — a safety net most grave mods don't have.
+
+**World-native persistence.** Grave data rides Minecraft's own `SavedData` pipeline,
+so it saves, backs up, and restores with the world itself — not in some file bolted
+on next to it.
+
+## Using it
+
+- **Open** — right-click the head to open the grave like a chest.
+- **Quick-collect** — sneak + right-click to sweep everything into your inventory;
+  armor jumps straight into empty armor slots.
+- XP is returned the moment you interact.
+- Die in lava, deep water, or the void and the grave settles at the nearest open,
+  dry spot instead of drowning with you.
+- Graves crumble after 10 minutes (configurable), dropping whatever's left.
+
+### Commands
+
+| Command | Who | Does |
+|---|---|---|
+| `/graves` | everyone | your graves + help |
+| `/graves tp [index]` | ops (players via `playerGraveTeleport`) | warp to your latest (or nth) grave |
+| `/graves list [player]` | ops for others | list active graves, click to warp |
+| `/graves rollback <player> [index]` | ops | restore a lost grave from history |
+| `/graves reload` | ops | reload the config |
+
+`/fiwgraves` works as an alias. Admin commands gate on vanilla operator level 2 —
+no permission plugin required, none supported, none needed.
+
+## Config
+
+`config/fiwgraves/config.json` — gameplay tuning only (timings, geometry, capture
+rules, restrictions). All player-facing text lives in code, not in a message file.
+
+Highlights:
+
+| Key | Default | |
+|---|---|---|
+| `despawnSeconds` | `600` | grave lifetime, `-1` = forever |
+| `quickCollectEnabled` | `true` | sneak-interact sweep |
+| `ownerOnlyAccess` | `false` | lock graves to their owner |
+| `playerGraveTeleport` | `false` | let non-ops use `/graves tp` |
+| `graveLimitPerPlayer` | `-1` | oldest grave crumbles past the cap |
+| `rollbackHistoryPerPlayer` | `5` | recoverable graves per player |
+| `storeExperience` / `storeItems` | `true` | what goes into the grave |
+| `disabledDimensions` | `[]` | dimensions that never spawn graves |
+
+## Building
+
+```
+./gradlew build
+```
+
+Jars land in `fabric/build/libs` and `neoforge/build/libs`. The project is a
+`common` + `fabric` + `neoforge` multiloader setup with official Mojang mappings —
+the shared module compiles once against vanilla, each loader adds only its hooks
+(NeoForge uses native events; Fabric carries the project's single gameplay mixin).
