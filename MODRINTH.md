@@ -24,7 +24,7 @@ What that buys you:
 - 💾 **World-native saves.** Grave data rides Minecraft's own `SavedData` pipeline, so it
   backs up and restores with the world itself.
 
-## Griefed? Rolled back.
+## Griefed? Rolled back. Buggy? Backed up.
 
 Every grave that expires or gets emptied by someone else is kept in a short per-player
 history. One command respawns the lost loot as a fresh grave:
@@ -33,7 +33,16 @@ history. One command respawns the lost loot as a fresh grave:
 /graves rollback <player>
 ```
 
-A safety net most grave mods don't have.
+On top of that, the *original* contents of every grave are separately backed up the
+moment it's created — kept for a configurable number of days regardless of whether the
+grave was collected normally. If a bug (in this mod or anywhere else) ever eats a
+player's loot, an operator can still pull it back:
+
+```
+/graves restore <player>
+```
+
+A safety net most grave mods don't have — twice over.
 
 ## In the field
 
@@ -53,6 +62,7 @@ A safety net most grave mods don't have.
 | `/graves tp [index]` | ops* | warp to your latest (or nth) grave |
 | `/graves list [player]` | ops for others | list graves — click an entry to warp |
 | `/graves rollback <player> [index]` | ops | restore a lost grave from history |
+| `/graves restore <player> [index]` | ops | restore from the loot-backup safety net (works even after collection) |
 | `/graves reload` | ops | reload the config |
 
 Admin commands gate on vanilla **operator level 2** — no permission mod required.
@@ -86,6 +96,7 @@ operators can always teleport.
   "graveLimitPerPlayer": -1,      // oldest crumbles past the cap, 0/-1 = unlimited
   "rollbackHistoryPerPlayer": 5,
   "rollbackRetentionMinutes": 1440,
+  "lootBackupRetentionDays": 7,   // safety-net copy, survives collection; 0 = off, -1 = forever
 
   "markerHeight": -0.6,           // head offset from the death spot
   "hologramHeight": 0.5,

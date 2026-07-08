@@ -46,6 +46,7 @@ on next to it.
 | `/graves tp [index]` | ops (players via `playerGraveTeleport`) | warp to your latest (or nth) grave |
 | `/graves list [player]` | ops for others | list active graves, click to warp |
 | `/graves rollback <player> [index]` | ops | restore a lost grave from history |
+| `/graves restore <player> [index]` | ops | restore from the loot-backup safety net (works even after the grave was collected) |
 | `/graves reload` | ops | reload the config |
 
 `/fiwgraves` works as an alias. Admin commands gate on vanilla operator level 2 —
@@ -66,6 +67,7 @@ Highlights:
 | `playerGraveTeleport` | `false` | let non-ops use `/graves tp` |
 | `graveLimitPerPlayer` | `-1` | oldest grave crumbles past the cap |
 | `rollbackHistoryPerPlayer` | `5` | recoverable graves per player |
+| `lootBackupRetentionDays` | `7` | days a loot-backup safety-net copy is kept, independent of the grave itself; survives normal collection so a bug can't erase the only copy. `0` disables, `-1` forever |
 | `storeExperience` / `storeItems` | `true` | what goes into the grave |
 | `disabledDimensions` | `[]` | dimensions that never spawn graves |
 
