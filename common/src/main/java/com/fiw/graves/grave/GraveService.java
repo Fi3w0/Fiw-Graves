@@ -115,7 +115,11 @@ public final class GraveService implements GraveInteractionHandler {
 				}
 			}
 
-			if (!player.getInventory().add(stack)) {
+			// Inventory#add returns true as soon as it merges ANY portion of the stack - not only
+			// on full consumption - so the leftover count left in `stack` must be checked directly.
+			// Trusting the return value here silently discarded the remainder on a partial merge.
+			player.getInventory().add(stack);
+			if (!stack.isEmpty()) {
 				player.drop(stack, false);
 			}
 			grave.container().setItem(i, ItemStack.EMPTY);
