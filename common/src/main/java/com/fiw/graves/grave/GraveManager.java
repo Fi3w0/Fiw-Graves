@@ -34,24 +34,31 @@ public class GraveManager extends SavedData {
 
 	private final List<Grave> graves;
 	private final Map<UUID, Deque<Grave>> rollbackHistory;
+	private final Map<UUID, Deque<Grave>> lootBackups;
 
 	public GraveManager() {
-		this(List.of(), Map.of());
+		this(List.of(), Map.of(), Map.of());
 	}
 
-	private GraveManager(List<Grave> graves, Map<UUID, List<Grave>> rollback) {
+	private GraveManager(List<Grave> graves, Map<UUID, List<Grave>> rollback, Map<UUID, List<Grave>> backups) {
 		this.graves = new ArrayList<>(graves);
 		this.rollbackHistory = new HashMap<>();
 		rollback.forEach((uuid, list) -> this.rollbackHistory.put(uuid, new ArrayDeque<>(list)));
+		this.lootBackups = new HashMap<>();
+		backups.forEach((uuid, list) -> this.lootBackups.put(uuid, new ArrayDeque<>(list)));
 		this.graves.forEach(this::trackChanges);
 		this.rollbackHistory.values().forEach(history -> history.forEach(this::trackChanges));
+		this.lootBackups.values().forEach(history -> history.forEach(this::trackChanges));
 	}
 
 	private static Codec<GraveManager> codec() {
 		return RecordCodecBuilder.create(instance -> instance.group(
 				Grave.CODEC.listOf().fieldOf("graves").forGetter(GraveManager::getGraves),
 				Codec.unboundedMap(UUIDUtil.STRING_CODEC, Grave.CODEC.listOf())
-						.fieldOf("rollback").forGetter(GraveManager::rollbackSnapshot)
+						.fieldOf("rollback").forGetter(GraveManager::rollbackSnapshot),
+				// optionalFieldOf so save files written before this feature existed still load.
+				Codec.unboundedMap(UUIDUtil.STRING_CODEC, Grave.CODEC.listOf())
+						.optionalFieldOf("loot_backups", Map.of()).forGetter(GraveManager::backupSnapshot)
 		).apply(instance, GraveManager::new));
 	}
 
@@ -60,8 +67,16 @@ public class GraveManager extends SavedData {
 	}
 
 	private Map<UUID, List<Grave>> rollbackSnapshot() {
+		return snapshotOf(rollbackHistory);
+	}
+
+	private Map<UUID, List<Grave>> backupSnapshot() {
+		return snapshotOf(lootBackups);
+	}
+
+	private static Map<UUID, List<Grave>> snapshotOf(Map<UUID, Deque<Grave>> history) {
 		Map<UUID, List<Grave>> snapshot = new HashMap<>();
-		rollbackHistory.forEach((uuid, deque) -> snapshot.put(uuid, new ArrayList<>(deque)));
+		history.forEach((uuid, deque) -> snapshot.put(uuid, new ArrayList<>(deque)));
 		return snapshot;
 	}
 
@@ -80,6 +95,7 @@ public class GraveManager extends SavedData {
 	public void addGrave(Grave grave) {
 		trackChanges(grave);
 		graves.add(grave);
+		pushBackup(grave);
 		setDirty();
 	}
 
@@ -135,6 +151,48 @@ public class GraveManager extends SavedData {
 		long cutoff = System.currentTimeMillis() - retentionMinutes * 60_000L;
 		boolean changed = false;
 		for (Deque<Grave> history : rollbackHistory.values()) {
+			changed |= history.removeIf(grave -> grave.spawnedAt() < cutoff);
+		}
+		if (changed) setDirty();
+	}
+
+	/**
+	 * Snapshots a grave's original contents into the loot-backup safety net, independent of the
+	 * rollback history above: this always runs (not just on anti-grief loss), so a bug anywhere in
+	 * the live collection/expiry path can never erase the only copy of what a grave held.
+	 */
+	private void pushBackup(Grave grave) {
+		if (Config.get().lootBackupRetentionDays == 0) return;
+		if (grave.isEmpty()) return;
+
+		Grave snapshot = grave.copySnapshot();
+		trackChanges(snapshot);
+		lootBackups.computeIfAbsent(grave.owner(), k -> new ArrayDeque<>()).addFirst(snapshot);
+	}
+
+	public List<Grave> getBackups(UUID owner) {
+		Deque<Grave> history = lootBackups.get(owner);
+		return history == null ? List.of() : List.copyOf(history);
+	}
+
+	/**
+	 * Reads (without removing) the backup entry at the given index (0 = most recent), or null if
+	 * there is no such entry. Backups are never consumed by restoring them - they're a durable
+	 * safety net, not a one-shot rollback, so the same entry can be restored again if needed.
+	 */
+	public Grave getBackup(UUID owner, int index) {
+		Deque<Grave> history = lootBackups.get(owner);
+		if (history == null || index < 0 || index >= history.size()) return null;
+		return history.stream().skip(index).findFirst().orElse(null);
+	}
+
+	public void pruneBackups() {
+		int retentionDays = Config.get().lootBackupRetentionDays;
+		if (retentionDays < 0) return;
+
+		long cutoff = System.currentTimeMillis() - retentionDays * 86_400_000L;
+		boolean changed = false;
+		for (Deque<Grave> history : lootBackups.values()) {
 			changed |= history.removeIf(grave -> grave.spawnedAt() < cutoff);
 		}
 		if (changed) setDirty();

@@ -144,6 +144,7 @@ public final class GraveService implements GraveInteractionHandler {
 		}
 
 		manager.pruneRollbackHistory();
+		manager.pruneBackups();
 	}
 
 	private void checkDespawn(MinecraftServer server, GraveManager manager, Grave grave) {

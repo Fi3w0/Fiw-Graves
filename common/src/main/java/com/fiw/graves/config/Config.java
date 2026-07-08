@@ -76,6 +76,14 @@ public class Config {
 	// Drop rollback entries older than this many minutes. -1 = keep forever.
 	public int rollbackRetentionMinutes = 1440;
 
+	// --- loot backup safety net ---
+	// Every grave's original contents are separately snapshotted the moment it's created, kept
+	// independent of the live grave and of the rollback history above - it survives normal
+	// collection, so a bug anywhere in the pickup/expiry path still leaves a recoverable copy an
+	// operator can restore with /graves restore. Days to keep a backup; recommended presets are
+	// 1, 3, 7 or 14, but any value works. 0 disables the feature, -1 keeps every backup forever.
+	public int lootBackupRetentionDays = 7;
+
 	// --- head texture override ---
 	// Base64 skin texture used for every grave head instead of the owner's own skin. Empty = off.
 	public String headTextureOverride = "";

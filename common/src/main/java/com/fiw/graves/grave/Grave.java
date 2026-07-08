@@ -109,6 +109,15 @@ public class Grave {
 		return container.getItems().stream().filter(stack -> !stack.isEmpty()).map(ItemStack::copy).toList();
 	}
 
+	/**
+	 * An independent copy of this grave's current contents, immune to whatever happens to this
+	 * grave afterwards (collection, expiry, a bug in either). Used to seed the loot-backup safety
+	 * net at the moment a grave is created.
+	 */
+	public Grave copySnapshot() {
+		return new Grave(id, owner, ownerName, dimension, position, yaw, remainingItems(), experience, spawnedAt);
+	}
+
 	/** Rows the chest UI shows - capped at a double chest even if the container holds more. */
 	public int rows() {
 		return Math.min(6, container.getContainerSize() / 9);

@@ -67,7 +67,13 @@ public final class GravesCommand {
 						.then(Commands.argument("player", EntityArgument.player())
 								.executes(ctx -> rollback(ctx, 0))
 								.then(Commands.argument("index", IntegerArgumentType.integer(0))
-										.executes(ctx -> rollback(ctx, IntegerArgumentType.getInteger(ctx, "index"))))));
+										.executes(ctx -> rollback(ctx, IntegerArgumentType.getInteger(ctx, "index"))))))
+				.then(Commands.literal("restore")
+						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+						.then(Commands.argument("player", EntityArgument.player())
+								.executes(ctx -> restore(ctx, 0))
+								.then(Commands.argument("index", IntegerArgumentType.integer(0))
+										.executes(ctx -> restore(ctx, IntegerArgumentType.getInteger(ctx, "index"))))));
 	}
 
 	private static int help(CommandContext<CommandSourceStack> ctx, String label) {
@@ -188,6 +194,25 @@ public final class GravesCommand {
 		manager.addGrave(respawned);
 
 		source.sendSuccess(() -> Messages.rollbackRestored(target.getGameProfile().name()), true);
+		return 1;
+	}
+
+	private static int restore(CommandContext<CommandSourceStack> ctx, int index) throws CommandSyntaxException {
+		CommandSourceStack source = ctx.getSource();
+		ServerPlayer target = EntityArgument.getPlayer(ctx, "player");
+		GraveManager manager = GraveManager.get(source.getServer());
+
+		Grave backup = manager.getBackup(target.getUUID(), index);
+		if (backup == null) {
+			source.sendFailure(Messages.restoreNone());
+			return 0;
+		}
+
+		Grave respawned = new Grave(UUID.randomUUID(), backup.owner(), backup.ownerName(), target.level().dimension(),
+				target.position(), target.getYRot(), backup.remainingItems(), backup.experience(), System.currentTimeMillis());
+		manager.addGrave(respawned);
+
+		source.sendSuccess(() -> Messages.restoreRestored(target.getGameProfile().name()), true);
 		return 1;
 	}
 

@@ -59,6 +59,7 @@ public final class Messages {
 		}
 		lines.add(helpLine(label, "list [player]", "list active graves"));
 		lines.add(helpLine(label, "rollback <player> [index]", "restore a player's lost grave"));
+		lines.add(helpLine(label, "restore <player> [index]", "restore from the loot-backup safety net"));
 		lines.add(helpLine(label, "reload", "reload the config"));
 		return lines.toArray(Component[]::new);
 	}
@@ -108,6 +109,18 @@ public final class Messages {
 	public static Component rollbackRestored(String ownerName) {
 		return accent("⚰ ").append(gray("Restored a grave for "))
 				.append(Component.literal(ownerName).withColor(ACCENT)).append(gray("."));
+	}
+
+	// --- /graves restore ---
+
+	public static Component restoreNone() {
+		return gray("No backed-up graves in that player's history.");
+	}
+
+	public static Component restoreRestored(String ownerName) {
+		return accent("⚰ ").append(gray("Restored a backed-up grave for "))
+				.append(Component.literal(ownerName).withColor(ACCENT))
+				.append(gray(" — check they haven't already collected the original."));
 	}
 
 	// --- /graves reload ---
