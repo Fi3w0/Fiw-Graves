@@ -4,7 +4,8 @@ plugins {
 }
 
 base {
-	archivesName = "${mod_id}-${project.name}-${minecraft_version}"
+	// project.name is already version-suffixed (e.g. "neoforge-1.21.1") in this monorepo layout.
+	archivesName = "${mod_id}-${project.name}"
 }
 
 java {
@@ -45,7 +46,6 @@ repositories {
 	configurations."$variant".outgoing {
 		capability("$group:${project.name}:$version")
 		capability("$group:${base.archivesName.get()}:$version")
-		capability("$group:$mod_id-${project.name}-${minecraft_version}:$version")
 		capability("$group:$mod_id:$version")
 	}
 	publishing.publications.configureEach {
@@ -78,20 +78,23 @@ jar {
 }
 
 processResources {
+	// Not every module defines every loader's properties (e.g. common-<ver> defines neither
+	// fabric_* nor neoforge_*; a loader module only defines its own loader's properties) -
+	// only the loader module actually processing mods.toml/fabric.mod.json needs them filled in.
 	var expandProps = [
 			'version'                      : version,
 			'group'                        : project.group,
 			'minecraft_version'            : minecraft_version,
 			'minecraft_version_range'      : minecraft_version_range,
-			'fabric_version'               : fabric_version,
-			'fabric_loader_version'        : fabric_loader_version,
+			'fabric_version'               : findProperty('fabric_version') ?: '',
+			'fabric_loader_version'        : findProperty('fabric_loader_version') ?: '',
 			'mod_name'                     : mod_name,
 			'mod_author'                   : mod_author,
 			'mod_id'                       : mod_id,
 			'license'                      : license,
 			'description'                  : project.description,
-			'neoforge_version'             : neoforge_version,
-			'neoforge_loader_version_range': neoforge_loader_version_range,
+			'neoforge_version'             : findProperty('neoforge_version') ?: '',
+			'neoforge_loader_version_range': findProperty('neoforge_loader_version_range') ?: '',
 			'credits'                      : credits,
 			'java_version'                 : java_version
 	]

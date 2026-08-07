@@ -11,8 +11,12 @@ configurations {
 	}
 }
 
+// Version-suffixed monorepo: each loader module depends on the sibling common module for the
+// same Minecraft version (e.g. neoforge-1.21.1 -> common-1.21.1), named by convention.
+def commonProjectPath = ":common-${minecraft_version}"
+
 dependencies {
-	compileOnly(project(':common')) {
+	compileOnly(project(commonProjectPath)) {
 		capabilities {
 			requireCapability "$group:$mod_id"
 		}
@@ -21,8 +25,8 @@ dependencies {
 			attribute(loaderAttribute, 'common')
 		}
 	}
-	commonJava project(path: ':common', configuration: 'commonJava')
-	commonResources project(path: ':common', configuration: 'commonResources')
+	commonJava project(path: commonProjectPath, configuration: 'commonJava')
+	commonResources project(path: commonProjectPath, configuration: 'commonResources')
 }
 
 tasks.named('compileJava', JavaCompile) {
