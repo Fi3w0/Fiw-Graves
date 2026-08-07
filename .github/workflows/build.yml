@@ -27,6 +27,7 @@ jobs:
         with:
           name: jars
           path: |
-            fabric/build/libs/*.jar
-            neoforge/build/libs/*.jar
+            fabric-1.21.11/build/libs/*.jar
+            neoforge-1.21.11/build/libs/*.jar
+            neoforge-1.21.1/build/libs/*.jar
           if-no-files-found: error
