@@ -8,6 +8,8 @@ and one of seven dry epitaphs. Walk back, crack it open, move on with your life.
 For **Minecraft 1.21.11** on **Fabric** and **NeoForge**.
 
 ---
+![Head](https://cdn.modrinth.com/data/ueQBZEGo/images/4943afb4ec7a9b06e1f38435f4e4707e92ced03a.png)
+---
 
 ## The graves aren't really there
 
