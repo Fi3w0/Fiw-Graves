@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0] - NeoForge 1.21.1 support
+
+### Added
+- **NeoForge support for Minecraft 1.21.1**, alongside the existing Fabric/NeoForge
+  1.21.11 targets. Same mod, same config, same commands — just an older Minecraft
+  version for servers that haven't updated yet.
+
+### Changed
+- Repo layout is now a version-suffixed monorepo (`common-<version>`,
+  `fabric-<version>`, `neoforge-<version>`) to support multiple Minecraft versions
+  side by side. No behavior change for existing 1.21.11 installs.
+
 ## [1.1.0] - Loot safety net
 
 ### Fixed

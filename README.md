@@ -6,7 +6,8 @@ When you die, your items and XP settle into a grave: a floating head, a few line
 floating text, and one of seven dry epitaphs. Walk back, crack it open, move on with
 your life.
 
-Built for **Minecraft 1.21.11** on **Fabric** and **NeoForge** from a single codebase.
+Built for **Minecraft 1.21.11** on **Fabric** and **NeoForge**, and **Minecraft 1.21.1**
+on **NeoForge**, from a single codebase.
 
 ## Why it's different
 
@@ -77,7 +78,9 @@ Highlights:
 ./gradlew build
 ```
 
-Jars land in `fabric/build/libs` and `neoforge/build/libs`. The project is a
-`common` + `fabric` + `neoforge` multiloader setup with official Mojang mappings —
-the shared module compiles once against vanilla, each loader adds only its hooks
-(NeoForge uses native events; Fabric carries the project's single gameplay mixin).
+Jars land in `<module>/build/libs` for each of `fabric-1.21.11`, `neoforge-1.21.11`,
+and `neoforge-1.21.1`. The project is a version-suffixed multiloader monorepo with
+official Mojang mappings — each `common-<version>` module compiles once against that
+Minecraft version, and each loader module (`fabric-<version>`, `neoforge-<version>`)
+adds only its hooks (NeoForge uses native events; Fabric carries the project's single
+gameplay mixin).
