@@ -33,3 +33,6 @@ __pycache__/
 *.py[cod]
 
 release/
+
+# Local tool settings
+.claude/
