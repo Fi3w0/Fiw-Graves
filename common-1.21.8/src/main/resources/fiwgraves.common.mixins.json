@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "com.fiw.graves.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"ArmorStandAccessor",
+		"DisplayAccessor",
+		"ServerGamePacketListenerImplMixin",
+		"ServerboundInteractPacketAccessor",
+		"TextDisplayAccessor"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
