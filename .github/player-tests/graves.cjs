@@ -24,7 +24,37 @@ async function until(condition, description, timeout = 12000) {
     await delay(100)
   }
 }
+// mineflayer waits for a 5x5 chunk square with a fixed 10 s limit. A slow server start or a
+// spawn on a chunk border must not fail the run once the client's own chunk has arrived.
+async function chunksLoaded() {
+  for (let attempt = 0; attempt < 6; attempt++) {
+    try { return await bot.waitForChunksToLoad() } catch (error) {
+      if (bot.world.getColumnAt(bot.entity.position)) return
+    }
+  }
+  throw new Error('Client chunks never loaded')
+}
 async function command(command) { emit({ console: command }); await delay(250) }
+// Builds test terrain only after the server confirms it. Chunks away from the player are not
+// loaded (no spawn chunks on newer versions), and an unverified fill fails silently, leaving the
+// client inside natural terrain of a random world or a hazard test without its hazard.
+async function build(dimension, [x1, z1, x2, z2], fills) {
+  const scoped = text => `execute in minecraft:${dimension} run ${text}`
+  await command(scoped(`forceload add ${x1} ${z1} ${x2} ${z2}`))
+  for (const fill of fills) {
+    const end = Date.now() + 20000
+    for (;;) {
+      const start = messages.length
+      bot.chat('/' + scoped(fill))
+      const done = () => messages.slice(start).some(m => m.includes('Successfully filled') || m.includes('No blocks were filled'))
+      const answered = () => done() || messages.length > start
+      for (let waited = 0; !answered() && waited < 2000; waited += 100) await delay(100)
+      if (done()) break
+      if (Date.now() > end) throw new Error(`Test terrain was not built: ${fill}; ${messages.slice(-5).join('; ')}`)
+      await delay(500)
+    }
+  }
+}
 async function inDimension(dimension) {
   const marker = `QA_DIM_${dimension}`
   const start = messages.length
@@ -79,11 +109,10 @@ async function assertNoGraves() {
 async function main() {
   await once(bot, 'spawn')
   bot.physicsEnabled = false
-  await bot.waitForChunksToLoad()
+  await chunksLoaded()
   await command(`op ${name}`)
   await command('difficulty peaceful')
-  await command('fill -6 64 -6 6 64 6 minecraft:stone')
-  await command('fill -6 65 -6 6 69 6 minecraft:air')
+  await build('overworld', [-6, -6, 6, 6], ['fill -6 64 -6 6 64 6 minecraft:stone', 'fill -6 65 -6 6 69 6 minecraft:air'])
   await command(`tp ${name} 0.5 65 0.5`)
   await command(`spawnpoint ${name} 0 65 0`)
   const stateFile = path.join(directory, 'graves-player-state.json')
@@ -111,7 +140,7 @@ async function main() {
     const spawned = once(bot, 'spawn')
     bot.respawn()
     await spawned
-    await bot.waitForChunksToLoad()
+    await chunksLoaded()
     assert.equal(count(allItems(), 'diamond'), 0, 'loot removed from dead player')
     assert.equal(count(allItems(), 'diamond_sword'), 0)
     const original = await marker()
@@ -125,7 +154,7 @@ async function main() {
     assert.equal(bot.experience.level, 0, 'cross-dimension interaction cannot consume grave XP')
     await command(`execute in minecraft:overworld run tp ${name} ${position.x} ${position.y} ${position.z}`)
     await inDimension('overworld')
-    await bot.waitForChunksToLoad()
+    await chunksLoaded()
     await delay(1000)
     emit({ assertion: 'death created a visible grave; enchanted items and XP left for restart; cross-dimension access denied' })
   } else if (phase === 'partial') {
@@ -205,8 +234,7 @@ async function main() {
         await inDimension('the_end')
         await delay(2500)
       } else {
-        await command('fill 18 64 -2 22 64 2 minecraft:stone')
-        await command(`fill 18 65 -2 22 67 2 minecraft:${hazard}`)
+        await build('overworld', [18, -2, 22, 2], ['fill 18 64 -2 22 64 2 minecraft:stone', `fill 18 65 -2 22 67 2 minecraft:${hazard}`])
         await command(`tp ${name} 20.5 65 0.5`)
       }
       const died = once(bot, 'death')
@@ -215,7 +243,7 @@ async function main() {
       const spawned = once(bot, 'spawn')
       bot.respawn()
       await spawned
-      await bot.waitForChunksToLoad()
+      await chunksLoaded()
       const entity = await marker()
       const config = JSON.parse(fs.readFileSync(path.join(directory, 'config/fiwgraves/config.json')))
       const graveY = entity.position.y - config.markerHeight
@@ -241,7 +269,7 @@ async function main() {
     const spawned = once(bot, 'spawn')
     bot.respawn()
     await spawned
-    await bot.waitForChunksToLoad()
+    await chunksLoaded()
     await until(() => count(allItems(), 'diamond') === 33, 'keepInventory retained items on player')
     await assertNoGraves()
     await command(`gamerule ${keepInventory} false`)
