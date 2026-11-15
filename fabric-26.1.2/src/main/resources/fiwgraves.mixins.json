@@ -1,0 +1,12 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "com.fiw.graves.fabric.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"PlayerDeathMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
