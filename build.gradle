@@ -6,3 +6,25 @@ plugins {
 	// see https://projects.neoforged.net/neoforged/moddevgradle for new versions
 	id 'net.neoforged.moddev' version "${moddev_version}" apply false
 }
+
+tasks.register('smokeTest', Exec) {
+    def module = providers.gradleProperty('smokeTarget').getOrElse('fabric-26.1.2')
+    dependsOn("$module:build")
+    commandLine 'python3', '.github/scripts/smoke-test.py', module,
+            "$module/build/libs/fiwgraves-$module-${project.version}.jar"
+}
+
+tasks.register('installPlayerTestTools', Exec) {
+    inputs.files('.github/player-tests/package.json', '.github/player-tests/package-lock.json')
+    outputs.dir('.github/player-tests/node_modules')
+    commandLine 'npm', 'ci', '--ignore-scripts', '--no-audit', '--no-fund',
+            '--cache', 'build/npm-cache', '--prefix', '.github/player-tests'
+}
+
+tasks.register('playerTest', Exec) {
+    def module = providers.gradleProperty('smokeTarget').getOrElse('fabric-26.1.2')
+    dependsOn("$module:build", 'installPlayerTestTools')
+    commandLine 'python3', '.github/scripts/smoke-test.py', module,
+            "$module/build/libs/fiwgraves-$module-${project.version}.jar",
+            '--player-script', '.github/player-tests/graves.cjs'
+}

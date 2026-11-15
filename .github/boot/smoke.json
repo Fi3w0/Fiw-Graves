@@ -1,0 +1,8 @@
+{
+  "commands": [
+    "graves reload"
+  ],
+  "expected": [
+    "reloaded"
+  ]
+}
