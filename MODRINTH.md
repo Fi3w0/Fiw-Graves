@@ -5,8 +5,13 @@
 Die, and your items and XP settle into a grave — a floating head, a few lines of text,
 and one of seven dry epitaphs. Walk back, crack it open, move on with your life.
 
-For **Minecraft 1.21.11** on **Fabric** and **NeoForge**, and **Minecraft 1.21.1** on
-**NeoForge**.
+| Minecraft | Loaders | Java |
+|---|---|---|
+| 26.1.2 | Fabric | 25 |
+| 1.21.11, 1.21.8, 1.21.1 | Fabric, NeoForge | 21 |
+| 1.20.1 | Fabric, Forge | 17 |
+
+Install Fabric API on Fabric. Forge and NeoForge need no additional required mods.
 
 ---
 ![Head](https://cdn.modrinth.com/data/ueQBZEGo/images/4943afb4ec7a9b06e1f38435f4e4707e92ced03a.png)

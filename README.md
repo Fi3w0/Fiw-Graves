@@ -6,8 +6,16 @@ When you die, your items and XP settle into a grave: a floating head, a few line
 floating text, and one of seven dry epitaphs. Walk back, crack it open, move on with
 your life.
 
-Built for **Minecraft 1.21.11** on **Fabric** and **NeoForge**, and **Minecraft 1.21.1**
-on **NeoForge**, from a single codebase.
+Built for Minecraft **26.1.2, 1.21.11, 1.21.8, 1.21.1 and 1.20.1**, with one release
+version across every supported loader.
+
+| Minecraft | Loaders | Java |
+|---|---|---|
+| 26.1.2 | Fabric | 25 |
+| 1.21.11 | Fabric, NeoForge | 21 |
+| 1.21.8 | Fabric, NeoForge | 21 |
+| 1.21.1 | Fabric, NeoForge | 21 |
+| 1.20.1 | Fabric, Forge | 17 |
 
 ## Why it's different
 
@@ -78,9 +86,22 @@ Highlights:
 ./gradlew build
 ```
 
-Jars land in `<module>/build/libs` for each of `fabric-1.21.11`, `neoforge-1.21.11`,
-and `neoforge-1.21.1`. The project is a version-suffixed multiloader monorepo with
+Build with JDK 25 available (older modules use Java 17/21 toolchains).
+All nine release jars land in `<module>/build/libs`. The project is a version-suffixed multiloader monorepo with
 official Mojang mappings — each `common-<version>` module compiles once against that
 Minecraft version, and each loader module (`fabric-<version>`, `neoforge-<version>`)
 adds only its hooks (NeoForge uses native events; Fabric carries the project's single
 gameplay mixin).
+
+## Automated verification and releases
+
+`./gradlew playerTest -PsmokeTarget=fabric-26.1.2` boots the production jar in a disposable
+`build/smoke/` world and connects a scripted vanilla client. The client checks enchanted items,
+armor, offhand loot, XP, a visible grave, partial GUI withdrawal, a full-inventory quick collect,
+and repeated saves/restarts. Node 22+ is required; `installPlayerTestTools` installs pinned test
+dependencies. These are development tools, never runtime mod dependencies.
+
+GitHub Actions builds and tests every target. A successful push to `main` with a new root
+`version` automatically publishes all nine jars to GitHub and Modrinth and syncs the store
+page. The tag workflow remains a recovery path. Keep the matching changelog section in the
+same commit as a version bump. Logs and save snapshots are retained under `build/smoke/`.

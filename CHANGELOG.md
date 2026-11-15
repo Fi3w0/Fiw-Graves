@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.3.0] - Full version support and loot persistence fixes
+
+> **Minecraft 1.21.1 servers: update.** Graves containing registry-backed item data such as
+> enchantments could fail to save. This release uses the world's registry context when
+> saving and loading them. Keep world backups; updating cannot restore data already lost.
+
+### Added
+- Fabric 26.1.2 (Java 25), Fabric and NeoForge 1.21.8, Fabric 1.21.1, and Fabric/Forge 1.20.1.
+- One release version across all nine targets, with automatic publishing after CI succeeds.
+- Automated vanilla-client tests for death capture, enchanted loot, armor/offhand items, XP,
+  partial GUI collection, full-inventory overflow, water/lava/void placement, keepInventory,
+  cross-dimension access denial and repeated server restarts.
+
+### Fixed
+- Reject stale grave interactions from another dimension before awarding loot or XP.
+- Minecraft 1.21.1 saves and loads item enchantments with the required registry access.
+- Version-specific death hooks, interaction packets, container dirty notifications and Forge
+  mixin mappings are adapted for each target.
+
+### Notes
+- Existing commands and configuration remain compatible. Test server output is disposable;
+  it never opens an existing player world.
+
 ## [1.2.0] - NeoForge 1.21.1 support
 
 ### Added
