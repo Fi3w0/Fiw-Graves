@@ -95,6 +95,7 @@ processResources {
 			'description'                  : project.description,
 			'neoforge_version'             : findProperty('neoforge_version') ?: '',
 			'neoforge_loader_version_range': findProperty('neoforge_loader_version_range') ?: '',
+			'forge_version'                : findProperty('forge_version') ?: '',
 			'credits'                      : credits,
 			'java_version'                 : java_version
 	]
@@ -103,7 +104,7 @@ processResources {
 		key, value -> [(key): value instanceof String ? value.replace("\n", "\\\\n") : value]
 	}
 
-	filesMatching(['META-INF/neoforge.mods.toml']) {
+	filesMatching(['META-INF/neoforge.mods.toml', 'META-INF/mods.toml']) {
 		expand expandProps
 	}
 
