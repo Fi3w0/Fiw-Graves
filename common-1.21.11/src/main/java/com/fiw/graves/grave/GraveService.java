@@ -73,6 +73,7 @@ public final class GraveService implements GraveInteractionHandler {
 		GraveManager manager = GraveManager.get(server);
 		Grave grave = manager.getGrave(graveId);
 		if (grave == null) return;
+		if (!player.level().dimension().equals(grave.dimension())) return;
 		if (player.distanceToSqr(grave.position().x, grave.position().y, grave.position().z) > INTERACT_RANGE_SQ) return;
 
 		Config config = Config.get();
