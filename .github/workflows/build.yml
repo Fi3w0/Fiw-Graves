@@ -14,20 +14,52 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: |
+            17
+            21
+            25
 
       - uses: gradle/actions/setup-gradle@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: .github/player-tests/package-lock.json
+
+      - name: Install pinned player test client
+        run: npm ci --prefix .github/player-tests --ignore-scripts
 
       - name: Build
         run: ./gradlew build --stacktrace
 
+      - name: Verify loot conservation and restarts on every production jar
+        run: |
+          source .github/scripts/targets.sh
+          VERSION="$(awk -F= '$1 == "version" {print $2}' gradle.properties)"
+          for target in "${TARGETS[@]}"; do
+            read -r module _ _ <<< "$target"
+            python3 .github/scripts/smoke-test.py "$module" "$(jar_path "$module" "$VERSION")" --player-script .github/player-tests/graves.cjs
+          done
+
+      - name: Collect all release jars
+        run: VERSION="$(awk -F= '$1 == "version" {print $2}' gradle.properties)" bash .github/scripts/collect-jars.sh
+
       - name: Upload jars
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: jars
-          path: |
-            fabric-1.21.11/build/libs/*.jar
-            neoforge-1.21.11/build/libs/*.jar
-            neoforge-1.21.1/build/libs/*.jar
+          path: release/*.jar
           if-no-files-found: error
+
+      - name: Retain production verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: graves-verification
+          path: |
+            build/smoke/**/*.log
+            build/smoke/**/snapshots/**
+            build/smoke/**/graves-player-state.json
+          if-no-files-found: ignore
+          retention-days: 14

@@ -21,20 +21,38 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: |
+            17
+            21
+            25
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: .github/player-tests/package-lock.json
+
+      - name: Install pinned player test client
+        run: npm ci --prefix .github/player-tests --ignore-scripts
+
       - name: Build
         run: ./gradlew build --stacktrace
+
+      - name: Verify loot conservation and restarts on every production jar
+        run: |
+          source .github/scripts/targets.sh
+          VERSION="$(awk -F= '$1 == "version" {print $2}' gradle.properties)"
+          for target in "${TARGETS[@]}"; do
+            read -r module _ _ <<< "$target"
+            python3 .github/scripts/smoke-test.py "$module" "$(jar_path "$module" "$VERSION")" --player-script .github/player-tests/graves.cjs
+          done
 
       - name: Read properties
         id: props
         run: |
           echo "mod_version=$(grep '^version=' gradle.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
-          echo "mc_version_fabric_1_21_11=$(grep '^minecraft_version=' fabric-1.21.11/gradle.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
-          echo "mc_version_neoforge_1_21_11=$(grep '^minecraft_version=' neoforge-1.21.11/gradle.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
-          echo "mc_version_neoforge_1_21_1=$(grep '^minecraft_version=' neoforge-1.21.1/gradle.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
 
       - name: Verify tag matches gradle.properties version
         run: |
@@ -57,57 +75,31 @@ jobs:
 
       - name: Collect release jars
         run: |
-          mkdir -p release-assets
-          cp fabric-1.21.11/build/libs/*.jar neoforge-1.21.11/build/libs/*.jar neoforge-1.21.1/build/libs/*.jar release-assets/
-          rm -f release-assets/*-sources.jar
+          VERSION="${{ steps.props.outputs.mod_version }}" bash .github/scripts/collect-jars.sh
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: "Fiw Graves ${{ github.ref_name }}"
           body_path: release_notes.md
-          files: release-assets/*.jar
+          files: release/*.jar
           fail_on_unmatched_files: true
 
-      - name: Publish to Modrinth (Fabric 1.21.11)
-        uses: Kir-Antipov/mc-publish@v3.3
-        with:
-          modrinth-id: fiw-graves
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          files: release-assets/fiwgraves-fabric-1.21.11-*.jar
-          name: "Fiw Graves ${{ github.ref_name }} (Fabric 1.21.11)"
-          version: ${{ github.ref_name }}
-          version-type: release
-          changelog-file: release_notes.md
-          loaders: fabric
-          game-versions: ${{ steps.props.outputs.mc_version_fabric_1_21_11 }}
-          java: 21
-          dependencies: fabric-api:required
+      - name: Publish every Modrinth target and sync description
+        env:
+          VERSION: ${{ steps.props.outputs.mod_version }}
+          CHANGELOG_FILE: release_notes.md
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        run: bash .github/scripts/publish-modrinth.sh
 
-      - name: Publish to Modrinth (NeoForge 1.21.11)
-        uses: Kir-Antipov/mc-publish@v3.3
+      - name: Retain production verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          modrinth-id: fiw-graves
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          files: release-assets/fiwgraves-neoforge-1.21.11-*.jar
-          name: "Fiw Graves ${{ github.ref_name }} (NeoForge 1.21.11)"
-          version: ${{ github.ref_name }}
-          version-type: release
-          changelog-file: release_notes.md
-          loaders: neoforge
-          game-versions: ${{ steps.props.outputs.mc_version_neoforge_1_21_11 }}
-          java: 21
-
-      - name: Publish to Modrinth (NeoForge 1.21.1)
-        uses: Kir-Antipov/mc-publish@v3.3
-        with:
-          modrinth-id: fiw-graves
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          files: release-assets/fiwgraves-neoforge-1.21.1-*.jar
-          name: "Fiw Graves ${{ github.ref_name }} (NeoForge 1.21.1)"
-          version: ${{ github.ref_name }}
-          version-type: release
-          changelog-file: release_notes.md
-          loaders: neoforge
-          game-versions: ${{ steps.props.outputs.mc_version_neoforge_1_21_1 }}
-          java: 21
+          name: graves-verification
+          path: |
+            build/smoke/**/*.log
+            build/smoke/**/snapshots/**
+            build/smoke/**/graves-player-state.json
+          if-no-files-found: ignore
+          retention-days: 14
