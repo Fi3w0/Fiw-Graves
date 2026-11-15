@@ -73,14 +73,14 @@ public class GraveManager extends SavedData {
 	}
 
 	private static GraveManager load(CompoundTag tag, HolderLookup.Provider registries) {
-		return codec().parse(NbtOps.INSTANCE, tag)
+		return codec().parse(registries.createSerializationContext(NbtOps.INSTANCE), tag)
 				.resultOrPartial(error -> LOGGER.error("Failed to load grave data, some graves may be lost: {}", error))
 				.orElseGet(GraveManager::new);
 	}
 
 	@Override
 	public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
-		codec().encodeStart(NbtOps.INSTANCE, this)
+		codec().encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), this)
 				.resultOrPartial(error -> LOGGER.error("Failed to save grave data: {}", error))
 				.ifPresent(encoded -> {
 					if (encoded instanceof CompoundTag compound) tag.merge(compound);
