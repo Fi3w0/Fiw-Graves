@@ -7,8 +7,8 @@
 > saving and loading them. Keep world backups; updating cannot restore data already lost.
 
 ### Added
-- Fabric and NeoForge 26.1.2 (Java 25), Fabric and NeoForge 1.21.8, Fabric 1.21.1, and Fabric/Forge 1.20.1.
-- One release version across all ten targets, with automatic publishing after CI succeeds.
+- Fabric and NeoForge 26.3 and 26.1.2 (Java 25), Fabric and NeoForge 1.21.8, Fabric 1.21.1, and Fabric/Forge 1.20.1.
+- One release version across all twelve targets, with automatic publishing after CI succeeds.
 - Automated vanilla-client tests for death capture, enchanted loot, armor/offhand items, XP,
   partial GUI collection, full-inventory overflow, water/lava/void placement, keepInventory,
   cross-dimension access denial and repeated server restarts.

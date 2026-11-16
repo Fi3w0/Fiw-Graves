@@ -7,7 +7,7 @@ and one of seven dry epitaphs. Walk back, crack it open, move on with your life.
 
 | Minecraft | Loaders | Java |
 |---|---|---|
-| 26.1.2 | Fabric, NeoForge | 25 |
+| 26.3, 26.1.2 | Fabric, NeoForge | 25 |
 | 1.21.11, 1.21.8, 1.21.1 | Fabric, NeoForge | 21 |
 | 1.20.1 | Fabric, Forge | 17 |
 
