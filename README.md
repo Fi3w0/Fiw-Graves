@@ -18,6 +18,9 @@ version across every supported loader.
 | 1.21.1 | Fabric, NeoForge | 21 |
 | 1.20.1 | Fabric, Forge | 17 |
 
+Fabric servers also need [Fabric API](https://modrinth.com/mod/fabric-api). Forge and NeoForge
+need nothing else.
+
 ## Why it's different
 
 **The graves aren't really there.** The head and text you see are pure network
@@ -88,10 +91,11 @@ Highlights:
 ```
 
 Build with JDK 25 available (older modules use Java 17/21 toolchains).
-All twelve release jars land in `<module>/build/libs`. The project is a version-suffixed multiloader monorepo with
-official Mojang mappings — each `common-<version>` module compiles once against that
-Minecraft version, and each loader module (`fabric-<version>`, `neoforge-<version>`)
-adds only its hooks (NeoForge uses native events; Fabric carries the project's single
+All twelve release jars land in `<module>/build/libs`.
+
+The project is a version-suffixed multiloader monorepo with official Mojang mappings — each
+`common-<version>` module compiles once against that Minecraft version, and each loader module
+(`fabric-<version>`, `neoforge-<version>` and `forge-1.20.1`) adds only its hooks (NeoForge uses native events; Fabric carries the project's single
 gameplay mixin).
 
 ## Automated verification and releases
@@ -102,7 +106,7 @@ armor, offhand loot, XP, a visible grave, partial GUI withdrawal, a full-invento
 and repeated saves/restarts. Node 22+ is required; `installPlayerTestTools` installs pinned test
 dependencies. These are development tools, never runtime mod dependencies.
 
-GitHub Actions builds and tests every target. Minecraft 26.3 gets the startup and console checks only until the test client supports it. A successful push to `main` with a new root
+GitHub Actions builds and tests every target. A successful push to `main` with a new root
 `version` automatically publishes all twelve jars to GitHub and Modrinth and syncs the store
 page. The tag workflow remains a recovery path. Keep the matching changelog section in the
 same commit as a version bump. Logs and save snapshots are retained under `build/smoke/`.
