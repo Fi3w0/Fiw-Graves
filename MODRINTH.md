@@ -14,7 +14,9 @@ and one of seven dry epitaphs. Walk back, crack it open, move on with your life.
 Install Fabric API on Fabric. Forge and NeoForge need no additional required mods.
 
 ---
+
 ![Head](https://cdn.modrinth.com/data/ueQBZEGo/images/4943afb4ec7a9b06e1f38435f4e4707e92ced03a.png)
+
 ---
 
 ## The graves aren't really there
