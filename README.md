@@ -11,7 +11,7 @@ version across every supported loader.
 
 | Minecraft | Loaders | Java |
 |---|---|---|
-| 26.1.2 | Fabric | 25 |
+| 26.1.2 | Fabric, NeoForge | 25 |
 | 1.21.11 | Fabric, NeoForge | 21 |
 | 1.21.8 | Fabric, NeoForge | 21 |
 | 1.21.1 | Fabric, NeoForge | 21 |
@@ -87,7 +87,7 @@ Highlights:
 ```
 
 Build with JDK 25 available (older modules use Java 17/21 toolchains).
-All nine release jars land in `<module>/build/libs`. The project is a version-suffixed multiloader monorepo with
+All ten release jars land in `<module>/build/libs`. The project is a version-suffixed multiloader monorepo with
 official Mojang mappings — each `common-<version>` module compiles once against that
 Minecraft version, and each loader module (`fabric-<version>`, `neoforge-<version>`)
 adds only its hooks (NeoForge uses native events; Fabric carries the project's single
@@ -102,6 +102,6 @@ and repeated saves/restarts. Node 22+ is required; `installPlayerTestTools` inst
 dependencies. These are development tools, never runtime mod dependencies.
 
 GitHub Actions builds and tests every target. A successful push to `main` with a new root
-`version` automatically publishes all nine jars to GitHub and Modrinth and syncs the store
+`version` automatically publishes all ten jars to GitHub and Modrinth and syncs the store
 page. The tag workflow remains a recovery path. Keep the matching changelog section in the
 same commit as a version bump. Logs and save snapshots are retained under `build/smoke/`.
